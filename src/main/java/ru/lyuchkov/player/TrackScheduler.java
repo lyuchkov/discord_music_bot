@@ -1,61 +1,84 @@
 package ru.lyuchkov.player;
 
-import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.sedmelluq.discord.lavaplayer.player.event.AudioEvent;
-import com.sedmelluq.discord.lavaplayer.player.event.AudioEventListener;
-import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
+import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.Queue;
 
-public final class TrackScheduler implements AudioLoadResultHandler, AudioEventListener {
+public class TrackScheduler extends AudioEventAdapter {
+    protected static volatile ArrayDeque<AudioTrack> queue = new ArrayDeque<>(30);
+    protected final AudioPlayer player;
 
-    private final AudioPlayer player;
-    private final BlockingQueue<AudioTrack> queue;
-
-    public TrackScheduler(final AudioPlayer player) {
+    public TrackScheduler(AudioPlayer player) {
         this.player = player;
-        this.queue = new LinkedBlockingDeque<>();
+    }
+
+    public static Queue<AudioTrack> getQueue() {
+        return queue;
     }
 
 
-    @Override
-    public void trackLoaded(final AudioTrack track) {
-        queue.add(track);
-        try {
-            player.playTrack(queue.take());
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+    public void setQueue(AudioTrack track) {
+        if (!player.startTrack(track, true)) {
+            queue.add(track);
         }
     }
 
     @Override
-    public void playlistLoaded(final AudioPlaylist playlist) {
-        List<AudioTrack> play = playlist.getTracks();
-        queue.addAll(play);
-        try {
-            player.playTrack(queue.take());
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+    public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
+        if (endReason.mayStartNext) {
+            nextTrack();
         }
     }
 
-    @Override
-    public void noMatches() {
-        // LavaPlayer did not find any audio to extract
+    public void setPause(Boolean b) {
+        player.setPaused(b);
     }
 
-    @Override
-    public void loadFailed(final FriendlyException exception) {
-            exception.printStackTrace();
+    public void nextTrack() {
+        player.startTrack(queue.poll(), false);
     }
 
-    @Override
-    public void onEvent(AudioEvent audioEvent) {
+    public void setListQueue(List<AudioTrack> tracks) {
+        queue.addAll(tracks);
+        if (player.startTrack(tracks.get(0), true)) {
+            nextTrack();
+        }
+    }
 
+    public void clear() {
+        queue.clear();
+    }
+
+    public void setFirstAtQueue(AudioTrack track) {
+        if (!player.startTrack(track, true)) {
+            queue.addFirst(track);
+        }
+    }
+
+    public void setFirstAtQueueList(List<AudioTrack> tracks) {
+        for (int i = tracks.size()-1; i >=0 ; i--) {
+            queue.addFirst(tracks.get(i));
+        }
+        if (player.startTrack(tracks.get(0), true)) {
+            nextTrack();
+        }
+    }
+    public void delete(int index) {
+        List<AudioTrack> tracks = new ArrayList<>();
+        for (int i = 0; i < queue.size(); i++) {
+            tracks.add(queue.pollLast());
+        }
+        if (index - 1 < tracks.size()) {
+            tracks.remove(index - 1);
+            queue.clear();
+            queue.addAll(tracks);
+        }
     }
 }
