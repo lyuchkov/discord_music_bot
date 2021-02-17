@@ -6,10 +6,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 public class TrackScheduler extends AudioEventAdapter {
     protected static volatile ArrayDeque<AudioTrack> queue = new ArrayDeque<>(30);
@@ -71,7 +68,7 @@ public class TrackScheduler extends AudioEventAdapter {
         }
     }
     public void delete(int index) {
-        List<AudioTrack> tracks = new ArrayList<>();
+        List<AudioTrack> tracks = new LinkedList<>();
         for (int i = 0; i < queue.size(); i++) {
             tracks.add(queue.pollLast());
         }

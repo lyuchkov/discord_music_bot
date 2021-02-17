@@ -26,7 +26,7 @@ public final class AudioLoadResultHandlerImpl implements AudioLoadResultHandler 
 
     @Override
     public void noMatches() {
-        // LavaPlayer did not find any audio to extract
+
     }
 
 

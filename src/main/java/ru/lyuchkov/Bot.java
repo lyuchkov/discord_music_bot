@@ -19,8 +19,8 @@ import ru.lyuchkov.interfaces.Command;
 import ru.lyuchkov.parse.Parser;
 import ru.lyuchkov.player.GuildMusicManager;
 import ru.lyuchkov.player.TrackScheduler;
-import ru.lyuchkov.utils.ContentController;
-import ru.lyuchkov.utils.StringUtils;
+import ru.lyuchkov.utils.UrlUtils;
+import ru.lyuchkov.utils.OutputUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,7 +47,7 @@ public class Bot {
                 .subscribe(event -> {
                     final String content = event.getMessage().getContent();
                     for (final Map.Entry<String, Command> entry : commands.entrySet()) {
-                        if (content.startsWith('*' + entry.getKey())) {
+                        if (content.startsWith('?' + entry.getKey())) {
                             entry.getValue().execute(event);
                             break;
                         }
@@ -56,7 +56,7 @@ public class Bot {
         client.onDisconnect().block();
     }
 
-    private static synchronized GuildMusicManager getGuildPlayerManager(Guild guild) {
+    public static synchronized GuildMusicManager getGuildPlayerManager(Guild guild) {
         long guildId = guild.getId().asLong();
         GuildMusicManager musicManager = musicManagers.get(guildId);
         if (musicManager == null) {
@@ -68,14 +68,18 @@ public class Bot {
 
     private static void putCommands() {
         commands.put("p", event -> {
-            if (!isConnectedGuildManager(event))
+            if (!isConnectedGuildManager(event)) {
                 join(event);
-            if(checkUrl(event)) {
+            }
+            if(UrlUtils.checkUrl(event)) {
                 play(event);
+                Objects.requireNonNull(event.getMessage()
+                        .getChannel().block()).
+                        createMessage("Добавил").block();
             }
             else {
                 String url = getUrl(event);
-                if(!url.equals("null")) {
+                if(!url.equals("error")) {
                     Objects.requireNonNull(event.getMessage()
                             .getChannel().block()).
                             createMessage("Нашел: " + url).block();
@@ -90,12 +94,12 @@ public class Bot {
         commands.put("pt", event -> {
             if (!isConnectedGuildManager(event))
                 join(event);
-            if(checkUrl(event)) {
+            if(UrlUtils.checkUrl(event)) {
                 playTop(event);
             }
             else {
-                String url =getUrl(event);
-                if(!url.equals("null")) {
+                String url = getUrl(event);
+                if(!url.equals("error")) {
                     Objects.requireNonNull(event.getMessage()
                             .getChannel().block()).
                             createMessage("Нашел: " + url).block();
@@ -120,12 +124,15 @@ public class Bot {
         commands.put("fs", event -> {
             if (!isConnectedGuildManager(event))
                 return;
+            Objects.requireNonNull(event.getMessage()
+                    .getChannel().block())
+                    .createMessage("Нахуй это дерьмо.").block();
             skip(event);
         });
         commands.put("j", event -> {
             Objects.requireNonNull(event.getMessage()
                     .getChannel().block()).
-                    createMessage("Я здесь").block();
+                    createMessage("Готов врубать фонк").block();
             join(event);
         });
         commands.put("e", event -> {
@@ -140,19 +147,24 @@ public class Bot {
                 return;
             Objects.requireNonNull(event.getMessage()
                     .getChannel().block())
-                    .createMessage(StringUtils.printQueue(getQueue(event))).block();
+                    .createMessage(OutputUtils.printQueue(getQueue(event))).block();
+        });
+        commands.put("k", event -> {
+            Objects.requireNonNull(event.getMessage()
+                    .getChannel().block())
+                    .createMessage("Жив ЭЖЖИ").block();
         });
         commands.put("h", event -> {
             Objects.requireNonNull(event.getMessage()
                     .getChannel().block())
-                    .createMessage(StringUtils.printCommands()).block();
+                    .createMessage(OutputUtils.printCommands()).block();
         });
         commands.put("clr", event -> {
             if (!isConnectedGuildManager(event))
                 return;
             Objects.requireNonNull(event.getMessage()
                 .getChannel().block())
-                .createMessage("Теперь очередь пуста.").block();
+                .createMessage("Теперь это дерьмо пусто").block();
             clearQueue(event);
         });
         commands.put("vol", event -> {
@@ -160,7 +172,7 @@ public class Bot {
                 return;
             Objects.requireNonNull(event.getMessage()
                     .getChannel().block())
-                    .createMessage("Сейчас поменяю.").block();
+                    .createMessage("Меняю это дерьмо.").block();
             setVolume(event);
         });
         commands.put("rm", event -> {
@@ -168,11 +180,11 @@ public class Bot {
                 return;
             Objects.requireNonNull(event.getMessage()
                     .getChannel().block())
-                    .createMessage("Удаляю.").block();
+                    .createMessage("Нахуй это дерьмо.").block();
             deleteElement(event);
             Objects.requireNonNull(event.getMessage()
                     .getChannel().block())
-                    .createMessage(StringUtils.printQueue(getQueue(event))).block();
+                    .createMessage(OutputUtils.printQueue(getQueue(event))).block();
         });
 
     }
@@ -204,25 +216,23 @@ public class Bot {
         });
     }
 
-    private static boolean isNull(String query){
-        return query == null;
-    }
+
     private synchronized static void play(MessageCreateEvent event) {
         GuildMusicManager guildMusicManager = getGuildPlayerManager(Objects.requireNonNull(event.getGuild().block()));
         guildMusicManager.player.addListener(guildMusicManager.scheduler);
         final String content = event.getMessage().getContent();
         final List<String> command = Arrays.asList(content.split(" "));
         String url =command.get(1);
-        if(!isNull(url)) {
+        if(!UrlUtils.isNull(url)) {
             playerManager.loadItemOrdered(guildMusicManager, url, guildMusicManager.resultHandler);
         }
     }
     private synchronized static void playTop(MessageCreateEvent event) {
         GuildMusicManager guildMusicManager = getGuildPlayerManager(Objects.requireNonNull(event.getGuild().block()));
         guildMusicManager.player.addListener(guildMusicManager.scheduler);
-        final String content = event.getMessage().getContent();
-        final List<String> command = Arrays.asList(content.split(" "));
-        if(!isNull(command.get(1))) {
+        String content = event.getMessage().getContent();
+        List<String> command = Arrays.asList(content.split(" "));
+        if(!UrlUtils.isNull(command.get(1))) {
             playerManager.loadItem(command.get(1), new AudioLoadResultHandler() {
                 private final TrackScheduler scheduler = guildMusicManager.scheduler;
 
@@ -252,16 +262,10 @@ public class Bot {
         GuildMusicManager guildMusicManager = getGuildPlayerManager(Objects.requireNonNull(event.getGuild().block()));
         final String content = event.getMessage().getContent();
         final List<String> command = Arrays.asList(content.split(" "));
-        if(!isNull(command.get(1)))
+        if(!UrlUtils.isNull(command.get(1)))
         guildMusicManager.scheduler.delete(Integer.parseInt(command.get(1)));
     }
-    private synchronized static boolean checkUrl(MessageCreateEvent event) {
-        final String content = event.getMessage().getContent();
-        final List<String> command = Arrays.asList(content.split(" "));
-        if(!isNull(command.get(1)))
-        return ContentController.isUrl(command.get(1));
-        else return false;
-    }
+
     private synchronized static void skip(MessageCreateEvent event){
         GuildMusicManager guildMusicManager = getGuildPlayerManager(Objects.requireNonNull(event.getGuild().block()));
         guildMusicManager.scheduler.nextTrack();
@@ -269,19 +273,21 @@ public class Bot {
     private synchronized static void playAndFind(MessageCreateEvent event, String url) {
         GuildMusicManager guildMusicManager = getGuildPlayerManager(Objects.requireNonNull(event.getGuild().block()));
         guildMusicManager.player.addListener(guildMusicManager.scheduler);
-        if(!isNull(url))
+        if(!UrlUtils.isNull(url))
         playerManager.loadItemOrdered(guildMusicManager, url, guildMusicManager.resultHandler);
     }
     private synchronized static String getUrl(MessageCreateEvent event) {
-        GuildMusicManager guildMusicManager = getGuildPlayerManager(Objects.requireNonNull(event.getGuild().block()));
-        guildMusicManager.player.addListener(guildMusicManager.scheduler);
-        final String content = event.getMessage().getContent();
-        final List<String> command = Arrays.asList(content.split(" "));
-        StringBuilder builder = new StringBuilder();
-        for (int i = 1; i < command.size() ; i++) {
-            builder.append(command.get(i));
-        }
-        return  Parser.getYoutubeUrl(builder.toString());
+        if (!event.getMessage().getContent().equals("*p")) {
+            String content = event.getMessage().getContent().replaceAll("\t", " ")
+                    .replaceAll("\n", " ");
+            List<String> command = Arrays.asList(content.split(" "));
+            StringBuilder builder = new StringBuilder();
+            for (int i = 1; i < command.size(); i++) {
+                builder.append(command.get(i));
+                builder.append(" ");
+            }
+            return Parser.getYoutubeUrl(builder.toString());
+        }else return "error";
     }
     private synchronized static void pause(MessageCreateEvent event){
         GuildMusicManager guildMusicManager = getGuildPlayerManager(Objects.requireNonNull(event.getGuild().block()));
@@ -324,7 +330,7 @@ public class Bot {
             GuildMusicManager guildMusicManager = getGuildPlayerManager(Objects.requireNonNull(event.getGuild().block()));
             final String content = event.getMessage().getContent();
             final List<String> command = Arrays.asList(content.split(" "));
-            if(!isNull(command.get(1)))
+            if(!UrlUtils.isNull(command.get(1)))
             guildMusicManager.player.setVolume(Integer.parseInt(command.get(1)));
     }
     private synchronized static Queue<AudioTrack> getQueue(MessageCreateEvent event){
@@ -332,7 +338,7 @@ public class Bot {
         //noinspection AccessStaticViaInstance
         return guildMusicManager.scheduler.getQueue();
     }
-    private synchronized static boolean isConnectedGuildManager(MessageCreateEvent event) {
+    public synchronized static boolean isConnectedGuildManager(MessageCreateEvent event) {
         GuildMusicManager guildMusicManager = getGuildPlayerManager(Objects.requireNonNull(event.getGuild().block()));
         return guildMusicManager.getConnect();
     }

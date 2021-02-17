@@ -4,7 +4,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import java.util.Queue;
 
-public class StringUtils {
+public class OutputUtils {
     public static String printQueue(Queue<AudioTrack> deque) {
         StringBuilder builder = new StringBuilder();
         String first = "На очереди: \n";

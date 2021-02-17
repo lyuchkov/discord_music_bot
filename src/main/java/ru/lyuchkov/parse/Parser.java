@@ -9,7 +9,7 @@ import java.util.Objects;
 public class Parser {
     public static String getYoutubeUrl(String query) {
         try {
-            String keys = getYoutubeSearchResult(getYoutubeQuery(query) + "&key=AIzaSyDOnS2m-DXTpW9laiBcHnb1WVgG7DSAs0g");
+            String keys = getYoutubeSearchResult(getYoutubeQuery(query) + "");
             String[] str = Objects.requireNonNull(getYouTubeId(keys)).split("\"");
             return "https://www.youtube.com/watch?v=" + str[1];
         } catch (IOException e) {
@@ -17,14 +17,14 @@ public class Parser {
         }
         return "error";
     }
-    //todo добавить два параметра, для того чтобы возвращать url для обоих целей
     public static String getYoutubeQuery(String query){
         StringBuilder builder = new StringBuilder();
         builder.append("https://youtube.googleapis.com/youtube/v3/search?q=");
         String[] q = query.split(" ");
         for (String s:
              q) {
-            builder.append(s.replaceAll("[\\s]{2,}", ""));
+            builder.append(s.replaceAll(" ", "")
+                    .trim());
             builder.append("+");
         }
         builder.deleteCharAt(builder.length()-1);
@@ -52,9 +52,5 @@ public class Parser {
                return arr[i+1];
         }
         return "null";
-    }
-    public static String getSongPage(String urlQuery){
-
-        return null;
     }
 }
