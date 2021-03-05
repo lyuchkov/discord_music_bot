@@ -5,13 +5,16 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 
 public class TrackScheduler extends AudioEventAdapter {
     protected static volatile LinkedList<AudioTrack> queue = new LinkedList<>();
-    protected final AudioPlayer player;
     protected static boolean isLoop = false;
     protected static AudioTrack loops;
+    protected final AudioPlayer player;
+
     public TrackScheduler(AudioPlayer player) {
         this.player = player;
     }
@@ -22,7 +25,7 @@ public class TrackScheduler extends AudioEventAdapter {
 
 
     public void setQueue(AudioTrack track) {
-        if(queue.size()+1 <=100) {
+        if (queue.size() + 1 <= 100) {
             if (!player.startTrack(track, true)) {
                 queue.add(track);
             }
@@ -45,14 +48,16 @@ public class TrackScheduler extends AudioEventAdapter {
     }
 
     public void nextTrack() {
-        if(isLoop){
+        if (isLoop) {
             player.startTrack(loops.makeClone(), false);
-        }else {
+        } else {
             player.startTrack(queue.poll(), false);
         }
     }
+
+
     public void setListQueue(List<AudioTrack> tracks) {
-        if(tracks.size() + queue.size() <=100) {
+        if (tracks.size() + queue.size() <= 100) {
             if (player.startTrack(tracks.get(0), true)) {
                 queue.addAll(tracks);
             }
@@ -64,7 +69,7 @@ public class TrackScheduler extends AudioEventAdapter {
     }
 
     public void setFirstAtQueue(AudioTrack track) {
-        if(queue.size()+1 <=100) {
+        if (queue.size() + 1 <= 100) {
             if (!player.startTrack(track, true)) {
                 queue.addFirst(track);
             }
@@ -72,7 +77,7 @@ public class TrackScheduler extends AudioEventAdapter {
     }
 
     public void setFirstAtQueueList(List<AudioTrack> tracks) {
-        if(tracks.size() + queue.size() <=100) {
+        if (tracks.size() + queue.size() <= 100) {
             for (int i = tracks.size() - 1; i >= 0; i--) {
                 queue.addFirst(tracks.get(i));
             }
@@ -81,6 +86,7 @@ public class TrackScheduler extends AudioEventAdapter {
             }
         }
     }
+
     public void delete(int index) {
         queue.remove(index);
     }
@@ -89,6 +95,7 @@ public class TrackScheduler extends AudioEventAdapter {
         isLoop = true;
         loops = player.getPlayingTrack().makeClone();
     }
+
     public void unLoop() {
         isLoop = false;
         loops = null;

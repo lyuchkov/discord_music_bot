@@ -9,7 +9,7 @@ public class GuildMusicManager {
     public final LavaPlayerAudioProvider provider;
     public static boolean connected;
     public final TrackScheduler scheduler;
-
+    public final AudioPlayerManager playerManager;
 
     public GuildMusicManager(AudioPlayerManager playerManager) {
         player = playerManager.createPlayer();
@@ -17,6 +17,7 @@ public class GuildMusicManager {
         scheduler = new TrackScheduler(player);
         resultHandler = new AudioLoadResultHandlerImpl(scheduler);
         connected = false;
+        this.playerManager = playerManager;
     }
     public void setConnected(Boolean t){
         connected=t;

@@ -1,4 +1,4 @@
-package ru.lyuchkov.interfaces;
+package ru.lyuchkov.handlers;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 
