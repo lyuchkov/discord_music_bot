@@ -21,8 +21,8 @@ public class GuildMusicManager {
     public void setConnected(Boolean t){
         connected=t;
     }
-    public boolean getConnect(){
-        return connected;
+    public boolean isConnected(){
+        return !connected;
     }
 
 }

@@ -1,6 +1,7 @@
 package ru.lyuchkov.utils;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import ru.lyuchkov.Bot;
 
 import java.util.Queue;
 
@@ -22,16 +23,26 @@ public class OutputUtils {
     }
 
     public static String printCommands() {
-        String first = "Список команд: \n";
-        return first +
-                "#play" + "\n" +
-                "#pause" + "\n" +
-                "#resume" + "\n" +
-                "#fs" + "\n" +
-                "#join" + "\n" +
-                "#exit" + "\n" +
-                "#q" + "\n" +
-                "#help" + "\n";
+        return
+                "Список команд:\n" +
+                "$p- Включить трек(можно вставить и ссылку и название)\n" +
+                "$pt - Включить трек в начало очереди\n" +
+                "$pause - Пауза\n" +
+                "$resume - Продолжить \n" +
+                "$volume - Настроить громкость\n" +
+                "$q - Очередь треков\n" +
+                "$fs - Пропуск текущего трека\n" +
+                "$remove - Удалить трек на определенной позиции из очереди\n" +
+                "$clr - Очистить очередь\n" +
+                "$np - Что играет сейчас?\n" +
+                "$loop - Проигрывание только текущего трека\n" +
+                "$unloop - Вернуться к очереди\n"+
+                "$lyrics - Слова песни\n" +
+                "$grab - Прислать название и ссылку на трек в лс\n" +
+                "$join- Присоедениться к каналу(можно и через запуск трека)\n" +
+                "$exit- Уйти из канала\n" +
+                "$alive- Проверить жив ли я\n" +
+                "$help - Список команд";
     }
 
 }
