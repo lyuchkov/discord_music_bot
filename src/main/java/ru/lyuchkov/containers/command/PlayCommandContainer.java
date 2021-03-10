@@ -4,7 +4,6 @@ import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import discord4j.core.event.domain.Event;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import ru.lyuchkov.factories.GuildMusicManagerFactory;
 import ru.lyuchkov.handlers.Command;
@@ -13,21 +12,12 @@ import ru.lyuchkov.player.GuildMusicManager;
 import ru.lyuchkov.utils.InputUtils;
 import ru.lyuchkov.utils.UrlUtils;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class PlayCommandContainer implements CommandContainer {
-    @Override
-    public Map<String, Command> getCommands() {
-        ConcurrentHashMap<String, Command> commands = new ConcurrentHashMap<>();
-        commands.put("pt", PlayCommandContainer::playTop);
-        commands.put("p", PlayCommandContainer::play);
-        commands.put("now", PlayCommandContainer::playNow);
-        return commands;
-    }
-
     public synchronized static void playTop(MessageCreateEvent event) {
         GuildMusicManager guildMusicManager = GuildMusicManagerFactory.getGuildPlayerManager(Objects.requireNonNull(event.getGuild().block()));
         if (guildMusicManager.isConnected()) PassCommandContainer.join(event);
@@ -118,8 +108,18 @@ public class PlayCommandContainer implements CommandContainer {
                     createMessage("Проблема с доступом в джойказино.").block();
         }
     }
-    public static synchronized void playNow(MessageCreateEvent event){
+
+    public static synchronized void playNow(MessageCreateEvent event) {
         playTop(event);
         QueueCommandContainer.skip(event);
+    }
+
+    @Override
+    public Map<String, Command> getCommands() {
+        Map<String, Command> commands = new HashMap<>();
+        commands.put("pt", PlayCommandContainer::playTop);
+        commands.put("p", PlayCommandContainer::play);
+        commands.put("now", PlayCommandContainer::playNow);
+        return commands;
     }
 }

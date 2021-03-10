@@ -6,17 +6,11 @@ import ru.lyuchkov.handlers.Command;
 import ru.lyuchkov.player.GuildMusicManager;
 import ru.lyuchkov.utils.InputUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
-public class VolumeCommandContainer implements CommandContainer{
-    @Override
-    public Map<String, Command> getCommands() {
-        ConcurrentHashMap<String, Command> commands = new ConcurrentHashMap<>();
-        commands.put("volume", VolumeCommandContainer::setVolume);
-        return commands;
-    }
+public class VolumeCommandContainer implements CommandContainer {
     public synchronized static void setVolume(MessageCreateEvent event) {
         GuildMusicManager guildMusicManager = GuildMusicManagerFactory.getGuildPlayerManager(Objects.requireNonNull(event.getGuild().block()));
         if (guildMusicManager.isConnected()) return;
@@ -40,5 +34,12 @@ public class VolumeCommandContainer implements CommandContainer{
                         .createMessage("Некорректный формат команды.").block();
             }
         }
+    }
+
+    @Override
+    public Map<String, Command> getCommands() {
+        Map<String, Command> commands = new HashMap<>();
+        commands.put("volume", VolumeCommandContainer::setVolume);
+        return commands;
     }
 }

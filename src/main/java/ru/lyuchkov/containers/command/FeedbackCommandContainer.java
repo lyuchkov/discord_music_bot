@@ -10,9 +10,9 @@ import ru.lyuchkov.player.GuildMusicManager;
 import ru.lyuchkov.utils.InputUtils;
 import ru.lyuchkov.utils.OutputUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class FeedbackCommandContainer implements CommandContainer {
     public synchronized static void grab(MessageCreateEvent event) {
@@ -61,7 +61,7 @@ public class FeedbackCommandContainer implements CommandContainer {
 
     @Override
     public Map<String, Command> getCommands() {
-        ConcurrentHashMap<String, Command> commands = new ConcurrentHashMap<>();
+        Map<String, Command> commands = new HashMap<>();
         commands.put("grab", FeedbackCommandContainer::grab);
         commands.put("lyrics", FeedbackCommandContainer::printLyrics);
         commands.put("alive", FeedbackCommandContainer::printAlive);

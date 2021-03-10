@@ -3,11 +3,11 @@ package ru.lyuchkov.handlers;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import ru.lyuchkov.containers.command.*;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class CommandHandler implements Handler {
-    private final Map<String, Command> commands = new ConcurrentHashMap<>();
+    private final Map<String, Command> commands = new HashMap<>();
 
     public CommandHandler() {
         PassCommandContainer passCommandContainer = new PassCommandContainer();
@@ -23,6 +23,7 @@ public class CommandHandler implements Handler {
         commands.putAll(breakCommandContainer.getCommands());
         commands.putAll(volumeCommandContainer.getCommands());
     }
+
     @Override
     public void handle(MessageCreateEvent event) {
         final String content = event.getMessage().getContent();

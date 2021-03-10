@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Queue;
 
 public class TrackScheduler extends AudioEventAdapter {
-    protected static volatile LinkedList<AudioTrack> queue = new LinkedList<>();
+    protected static LinkedList<AudioTrack> queue = new LinkedList<>();
     protected static boolean isLoop = false;
     protected static AudioTrack loops;
     protected final AudioPlayer player;

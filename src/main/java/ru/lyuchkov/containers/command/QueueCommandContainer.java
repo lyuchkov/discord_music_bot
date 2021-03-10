@@ -9,9 +9,9 @@ import ru.lyuchkov.utils.InputUtils;
 import ru.lyuchkov.utils.OutputUtils;
 import ru.lyuchkov.utils.TimeUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class QueueCommandContainer implements CommandContainer {
     public static synchronized void deleteElement(MessageCreateEvent event) {
@@ -40,6 +40,7 @@ public class QueueCommandContainer implements CommandContainer {
             }
         }
     }
+
     public synchronized static void clearQueue(MessageCreateEvent event) {
         GuildMusicManager guildMusicManager = GuildMusicManagerFactory.getGuildPlayerManager(Objects.requireNonNull(event.getGuild().block()));
         if (guildMusicManager.isConnected()) return;
@@ -48,6 +49,7 @@ public class QueueCommandContainer implements CommandContainer {
                 .getChannel().block())
                 .createMessage("Теперь очередь пуста").block();
     }
+
     public synchronized static void loop(MessageCreateEvent event) {
         GuildMusicManager guildMusicManager = GuildMusicManagerFactory.getGuildPlayerManager(Objects.requireNonNull(event.getGuild().block()));
         if (guildMusicManager.isConnected()) return;
@@ -65,6 +67,7 @@ public class QueueCommandContainer implements CommandContainer {
                 .getChannel().block())
                 .createMessage("Надоело?").block();
     }
+
     public synchronized static void printQueue(MessageCreateEvent event) {
         GuildMusicManager guildMusicManager = GuildMusicManagerFactory.getGuildPlayerManager(Objects.requireNonNull(event.getGuild().block()));
         if (guildMusicManager.isConnected()) return;
@@ -84,19 +87,21 @@ public class QueueCommandContainer implements CommandContainer {
                     .getChannel().block())
                     .createMessage("♫Сейчас играет♫" + "\n"
                             + title + "\n" + "\n"
-                            + "Времени прошло: " + nowPosition +  " мин."+"\n"
-                            + "Трек длится: " +length+  " мин.").block();
+                            + "Времени прошло: " + nowPosition + " мин." + "\n"
+                            + "Трек длится: " + length + " мин.").block();
         } else {
             Objects.requireNonNull(event.getMessage()
                     .getChannel().block())
                     .createMessage("Сейчас ничего не играет.").block();
         }
     }
+
     public synchronized static void skip(MessageCreateEvent event) {
         GuildMusicManager guildMusicManager = GuildMusicManagerFactory.getGuildPlayerManager(Objects.requireNonNull(event.getGuild().block()));
         if (guildMusicManager.isConnected()) return;
         guildMusicManager.scheduler.nextTrack();
     }
+
     public synchronized static void fastSkip(MessageCreateEvent event) {
         skip(event);
         Objects.requireNonNull(event.getMessage()
@@ -106,7 +111,7 @@ public class QueueCommandContainer implements CommandContainer {
 
     @Override
     public Map<String, Command> getCommands() {
-        ConcurrentHashMap<String, Command> commands = new ConcurrentHashMap<>();
+        Map<String, Command> commands = new HashMap<>();
         commands.put("remove", QueueCommandContainer::deleteElement);
         commands.put("clr", QueueCommandContainer::clearQueue);
         commands.put("loop", QueueCommandContainer::loop);

@@ -26,7 +26,7 @@ public class ParseUtil {
     }
     public static String getYoutubeUrl(List<String> query) {
         try {
-            String keys = youtubeParser.getSearchResultPage(youtubeParser.getYoutubeUrl(query) + "").html();
+            String keys = youtubeParser.getSearchResultPage(youtubeParser.getYoutubeUrl(query) + "&key=AIzaSyDOnS2m-DXTpW9laiBcHnb1WVgG7DSAs0g").html();
             String[] str = Objects.requireNonNull(YoutubeParser.getYouTubeId(keys)).split("\"");
             return "https://www.youtube.com/watch?v=" + str[1];
         } catch (IOException e) {

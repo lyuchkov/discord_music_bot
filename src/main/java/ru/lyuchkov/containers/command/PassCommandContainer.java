@@ -8,9 +8,9 @@ import ru.lyuchkov.factories.GuildMusicManagerFactory;
 import ru.lyuchkov.handlers.Command;
 import ru.lyuchkov.player.GuildMusicManager;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class PassCommandContainer implements CommandContainer {
 
@@ -31,6 +31,7 @@ public class PassCommandContainer implements CommandContainer {
             }
         }
     }
+
     public synchronized static void exit(MessageCreateEvent event) {
         GuildMusicManager guildMusicManager = GuildMusicManagerFactory.getGuildPlayerManager(Objects.requireNonNull(event.getGuild().block()));
         final Member member = event.getMember().orElse(null);
@@ -41,6 +42,7 @@ public class PassCommandContainer implements CommandContainer {
                 if (channel != null) {
                     channel.sendDisconnectVoiceState().block();
                     guildMusicManager.player.stopTrack();
+                    guildMusicManager.scheduler.clear();
                     guildMusicManager.setConnected(false);
                     QueueCommandContainer.clearQueue(event);
                     Objects.requireNonNull(event.getMessage()
@@ -53,7 +55,7 @@ public class PassCommandContainer implements CommandContainer {
 
     @Override
     public Map<String, Command> getCommands() {
-        ConcurrentHashMap<String, Command> commands = new ConcurrentHashMap<>();
+        Map<String, Command> commands = new HashMap<>();
         commands.put("join", PassCommandContainer::join);
         commands.put("exit", PassCommandContainer::exit);
         return commands;

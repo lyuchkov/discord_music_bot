@@ -6,7 +6,6 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import ru.lyuchkov.handlers.CommandHandler;
 
 public class Bot {
-
     public static void main(String[] args) {
         final GatewayDiscordClient client = DiscordClientBuilder.create(args[0]).build()
                 .login()
@@ -18,6 +17,4 @@ public class Bot {
                 .subscribe(commandHandler::handle);
         client.onDisconnect().block();
     }
-
-
 }
