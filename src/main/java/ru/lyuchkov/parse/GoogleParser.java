@@ -7,7 +7,6 @@ import org.jsoup.nodes.Element;
 import java.io.IOException;
 
 public class GoogleParser implements Parser {
-    @Override
     public String getUrl(String query) {
         StringBuilder builder = new StringBuilder();
         builder.append("https://www.google.com/search?ie=UTF-8&oe=UTF-8&q=");

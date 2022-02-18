@@ -14,14 +14,14 @@ public class VolumeCommandContainer implements CommandContainer {
     public synchronized static void setVolume(MessageCreateEvent event) {
         GuildMusicManager guildMusicManager = GuildMusicManagerFactory.getGuildPlayerManager(Objects.requireNonNull(event.getGuild().block()));
         if (guildMusicManager.isConnected()) return;
-        final String content = InputUtils.getValidCommand("volume", event.getMessage().getContent()).replaceAll(" ", "");
+        final String content = InputUtils.getValidCommand("vol", event.getMessage().getContent()).replaceAll(" ", "");
         if (!content.isEmpty()) {
             try {
                 int volume = Integer.parseInt(content);
                 if (volume >= 200 || volume < 0) {
                     Objects.requireNonNull(event.getMessage()
                             .getChannel().block())
-                            .createMessage("Вот скажи мне, ты идиот?").block();
+                            .createMessage("Это слишком").block();
                     return;
                 }
                 guildMusicManager.player.setVolume(volume);
@@ -39,7 +39,7 @@ public class VolumeCommandContainer implements CommandContainer {
     @Override
     public Map<String, Command> getCommands() {
         Map<String, Command> commands = new HashMap<>();
-        commands.put("volume", VolumeCommandContainer::setVolume);
+        commands.put("vol", VolumeCommandContainer::setVolume);
         return commands;
     }
 }

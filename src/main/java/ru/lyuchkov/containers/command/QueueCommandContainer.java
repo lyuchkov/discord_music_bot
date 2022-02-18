@@ -17,7 +17,7 @@ public class QueueCommandContainer implements CommandContainer {
     public static synchronized void deleteElement(MessageCreateEvent event) {
         GuildMusicManager guildMusicManager = GuildMusicManagerFactory.getGuildPlayerManager(Objects.requireNonNull(event.getGuild().block()));
         if (guildMusicManager.isConnected()) return;
-        final String numAsStr = InputUtils.getValidCommand("remove", event.getMessage().getContent()).replaceAll(" ", "");
+        final String numAsStr = InputUtils.getValidCommand("rm", event.getMessage().getContent()).replaceAll(" ", "");
         int position;
         int size = TrackScheduler.getQueue().size();
         if (!numAsStr.isEmpty()) {
@@ -108,17 +108,45 @@ public class QueueCommandContainer implements CommandContainer {
                 .getChannel().block())
                 .createMessage("Мне тоже не нравится").block();
     }
+    public synchronized static void moveTo(MessageCreateEvent event) {
+        GuildMusicManager guildMusicManager = GuildMusicManagerFactory.getGuildPlayerManager(Objects.requireNonNull(event.getGuild().block()));
+        if (guildMusicManager.isConnected()) return;
+        String content = InputUtils.getValidCommand("moveto", event.getMessage().getContent())
+                .replaceAll(" ", "");
+        int position;
+        int size = TrackScheduler.getQueue().size();
+        if (!content.isEmpty()) {
+            try {
+                position = Integer.parseInt(content);
+                if (position > size || position < 1) {
+                    Objects.requireNonNull(event.getMessage()
+                            .getChannel().block())
+                            .createMessage("Что-то явно не так").block();
+                } else {
+                    guildMusicManager.scheduler.startSpecific(position);
+                    Objects.requireNonNull(event.getMessage()
+                            .getChannel().block())
+                            .createMessage("Передвинул").block();
+                }
+            } catch (NumberFormatException e) {
+                Objects.requireNonNull(event.getMessage()
+                        .getChannel().block())
+                        .createMessage("Некорректный формат команды.").block();
+            }
+        }
+    }
 
     @Override
     public Map<String, Command> getCommands() {
         Map<String, Command> commands = new HashMap<>();
-        commands.put("remove", QueueCommandContainer::deleteElement);
+        commands.put("rm", QueueCommandContainer::deleteElement);
         commands.put("clr", QueueCommandContainer::clearQueue);
-        commands.put("loop", QueueCommandContainer::loop);
-        commands.put("unloop", QueueCommandContainer::unLoop);
+        commands.put("lp", QueueCommandContainer::loop);
+        commands.put("unlp", QueueCommandContainer::unLoop);
         commands.put("q", QueueCommandContainer::printQueue);
         commands.put("np", QueueCommandContainer::printNowPlay);
         commands.put("fs", QueueCommandContainer::fastSkip);
+        commands.put("mv", QueueCommandContainer::moveTo);
         return commands;
     }
 }

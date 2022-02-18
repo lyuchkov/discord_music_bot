@@ -18,100 +18,83 @@ import java.util.Map;
 import java.util.Objects;
 
 public class PlayCommandContainer implements CommandContainer {
+    public synchronized static void play(MessageCreateEvent event) {
+        start(event, "p", false);
+    }
     public synchronized static void playTop(MessageCreateEvent event) {
-        GuildMusicManager guildMusicManager = GuildMusicManagerFactory.getGuildPlayerManager(Objects.requireNonNull(event.getGuild().block()));
-        if (guildMusicManager.isConnected()) PassCommandContainer.join(event);
-        guildMusicManager.player.addListener(guildMusicManager.scheduler);
-        AudioLoadResultHandler audioLoadResultHandler = new AudioLoadResultHandler() {
-
-
-            @Override
-            public void trackLoaded(AudioTrack audioTrack) {
-                guildMusicManager.scheduler.setFirstAtQueue(audioTrack);
-            }
-
-            @Override
-            public void playlistLoaded(AudioPlaylist audioPlaylist) {
-                guildMusicManager.scheduler.setFirstAtQueueList(audioPlaylist.getTracks());
-            }
-
-            @Override
-            public void noMatches() {
-
-            }
-
-            @Override
-            public void loadFailed(FriendlyException e) {
-                e.printStackTrace();
-            }
-        };
-        String content = InputUtils.getValidCommand("pt", event.getMessage().getContent());
-        List<String> command = InputUtils.getValidList(content);
-        if (command.isEmpty()) return;
-        try {
-            if (UrlUtils.isUrl(command.get(0))) {
-                guildMusicManager.playerManager.loadItem(command.get(0), audioLoadResultHandler);
-                Objects.requireNonNull(event.getMessage()
-                        .getChannel().block()).
-                        createMessage("Добавил в начало").block();
-            } else {
-                String url = ParseUtil.getYoutubeUrl(command);
-                if (!url.equals("error")) {
-                    Objects.requireNonNull(event.getMessage()
-                            .getChannel().block()).
-                            createMessage("Нашел: " + url).block();
-                    guildMusicManager.playerManager.loadItem(url, audioLoadResultHandler);
-                } else {
-                    Objects.requireNonNull(event.getMessage()
-                            .getChannel().block()).
-                            createMessage("Не нашел.").block();
-                }
-            }
-        } catch (FriendlyException e) {
-            Objects.requireNonNull(event.getMessage()
-                    .getChannel().block()).
-                    createMessage("Проблема с доступом в джойказино.").block();
-        }
+        start(event, "pt", true);
 
     }
-
-    public synchronized static void play(MessageCreateEvent event) {
+    public static synchronized void playNow(MessageCreateEvent event) {
+        start(event, "now", true);
+        QueueCommandContainer.skip(event);
+    }
+    private static synchronized void start(MessageCreateEvent event, String commandName, boolean isTop){
         GuildMusicManager guildMusicManager = GuildMusicManagerFactory.getGuildPlayerManager(Objects.requireNonNull(event.getGuild().block()));
         if (guildMusicManager.isConnected()) PassCommandContainer.join(event);
         guildMusicManager.player.addListener(guildMusicManager.scheduler);
-        String content = InputUtils.getValidCommand("p", event.getMessage().getContent());
+        String content = InputUtils.getValidCommand(commandName, event.getMessage().getContent());
         List<String> command = InputUtils.getValidList(content);
+        AudioLoadResultHandler audioLoadResultHandler;
+        if(isTop){
+            audioLoadResultHandler = new AudioLoadResultHandler() {
+
+
+                @Override
+                public void trackLoaded(AudioTrack audioTrack) {
+                    guildMusicManager.scheduler.setFirstAtQueue(audioTrack);
+                }
+
+                @Override
+                public void playlistLoaded(AudioPlaylist audioPlaylist) {
+                    guildMusicManager.scheduler.setFirstAtQueueList(audioPlaylist.getTracks());
+                }
+
+                @Override
+                public void noMatches() {
+
+                }
+
+                @Override
+                public void loadFailed(FriendlyException e) {
+                    e.printStackTrace();
+                }
+            };
+        } else {
+            audioLoadResultHandler = guildMusicManager.resultHandler;
+        }
         if (command.isEmpty()) return;
-        try {
+        try{
             if (UrlUtils.isUrl(command.get(0))) {
                 String url = command.get(0);
-                guildMusicManager.playerManager.loadItemOrdered(guildMusicManager, url, guildMusicManager.resultHandler);
-                Objects.requireNonNull(event.getMessage()
-                        .getChannel().block()).
-                        createMessage("Добавил").block();
+                guildMusicManager.playerManager.loadItemOrdered(guildMusicManager, url, audioLoadResultHandler);
+                if(isTop) {
+                    Objects.requireNonNull(event.getMessage()
+                            .getChannel().block()).
+                            createMessage("Добавил в начало").block();
+                } else {
+                    Objects.requireNonNull(event.getMessage()
+                            .getChannel().block()).
+                            createMessage("Добавил").block();
+                }
             } else {
                 String url = ParseUtil.getYoutubeUrl(command);
                 if (!url.equals("error")) {
                     Objects.requireNonNull(event.getMessage()
                             .getChannel().block()).
                             createMessage("Нашел: " + url).block();
-                    guildMusicManager.playerManager.loadItemOrdered(guildMusicManager, url, guildMusicManager.resultHandler);
+                    guildMusicManager.playerManager.loadItemOrdered(guildMusicManager, url, audioLoadResultHandler);
                 } else {
                     Objects.requireNonNull(event.getMessage()
                             .getChannel().block()).
                             createMessage("Не нашел.").block();
                 }
             }
-        } catch (FriendlyException e) {
+        }catch (FriendlyException e) {
             Objects.requireNonNull(event.getMessage()
                     .getChannel().block()).
                     createMessage("Проблема с доступом в джойказино.").block();
         }
-    }
-
-    public static synchronized void playNow(MessageCreateEvent event) {
-        playTop(event);
-        QueueCommandContainer.skip(event);
     }
 
     @Override

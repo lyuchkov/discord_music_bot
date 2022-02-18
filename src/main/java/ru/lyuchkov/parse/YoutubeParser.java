@@ -19,13 +19,6 @@ public class YoutubeParser implements Parser {
         builder.deleteCharAt(builder.length()-1);
         return builder.toString();
     }
-
-    @Override
-    public String getUrl(String s) {
-        return "not that method";
-    }
-
-
     @Override
     public Element getSearchResultPage(String query) throws IOException {
         Document searchPage = Jsoup.connect(query)

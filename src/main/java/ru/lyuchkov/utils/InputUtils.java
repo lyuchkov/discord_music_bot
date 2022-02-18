@@ -3,7 +3,7 @@ package ru.lyuchkov.utils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InputUtils {
+public final class InputUtils {
     public static String getValidCommand(String name, String command){
         return getValidString(command).replaceAll("\\$"+name, "");
     }

@@ -26,7 +26,7 @@ public class PassCommandContainer implements CommandContainer {
                     guildMusicManager.setConnected(true);
                     Objects.requireNonNull(event.getMessage()
                             .getChannel().block()).
-                            createMessage("Готов врубать фонк").block();
+                            createMessage("Готов включать фонк").block();
                 }
             }
         }

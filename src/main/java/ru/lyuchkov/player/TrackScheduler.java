@@ -100,4 +100,13 @@ public class TrackScheduler extends AudioEventAdapter {
         isLoop = false;
         loops = null;
     }
+    public void seek(long seek){
+        player.getPlayingTrack().setPosition(player.getPlayingTrack().getPosition() + seek);
+    }
+    public void startSpecific(int number){
+        AudioTrack track = queue.get(number-1).makeClone();
+        queue.remove(number-1);
+        setFirstAtQueue(track);
+        nextTrack();
+    }
 }

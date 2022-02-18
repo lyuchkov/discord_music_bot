@@ -37,7 +37,7 @@ public class FeedbackCommandContainer implements CommandContainer {
     public synchronized static void printAlive(MessageCreateEvent event) {
         Objects.requireNonNull(event.getMessage()
                 .getChannel().block())
-                .createMessage("Жив ЭЖЖИ").block();
+                .createMessage("Бот работает нормально").block();
     }
 
     public synchronized static void printLyrics(MessageCreateEvent event) {
